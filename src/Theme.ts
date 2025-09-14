@@ -10,7 +10,7 @@ export const theme = createTheme({
         secondary: {main: getCssVariable('--secondary-color') || '#dc004e'},
         background: {
             paper: getCssVariable('--background-paper') || '#f5f5f5',
-            default: getCssVariable('--background-default') || '#7b6ccb',
+            default: getCssVariable('--background-default') || '#dedbf1',
         },
     },
     typography: {
