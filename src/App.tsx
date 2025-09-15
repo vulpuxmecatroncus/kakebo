@@ -1,22 +1,20 @@
 import {useState} from "react";
 //import {invoke} from "@tauri-apps/api/core";
-import MenuIcon from "@mui/icons-material/Menu";
 import {ThemeProvider} from '@mui/material/styles';
 import {
     Box,
     Button,
     Drawer,
     Grid,
-    IconButton,
     List,
-    ListItemButton,Tab,
+    ListItemButton, Tab,
     Tabs,
     Typography
 } from "@mui/material";
 
 import "./App.scss";
-import {AccountCircle, Home} from "@mui/icons-material";
 import {theme} from "./Theme.ts";
+import Header from "./components/header/Header.tsx";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
@@ -30,22 +28,7 @@ function App() {
     return (
         <ThemeProvider theme={theme}>
             <Box component="main">
-                <Box component="header" boxShadow={1}>
-                    <Box display="flex" alignItems="center" justifyContent="space-between" p={2}>
-                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)}>
-                            <MenuIcon/>
-                        </IconButton>
-                        <IconButton edge="start" color="inherit" aria-label="home">
-                            <Home/>
-                        </IconButton>
-                        <Typography variant="h5" sx={{flexGrow: 1, textAlign: "center"}}>
-                            Welcome to Kakebo
-                        </Typography>
-                        <IconButton color="inherit">
-                            <AccountCircle/>
-                        </IconButton>
-                    </Box>
-                </Box>
+                <Header setDrawerOpen={setDrawerOpen}/>
                 <Box display="flex" height="90vh">
                     {/* Hamburger Drawer */}
                     <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
