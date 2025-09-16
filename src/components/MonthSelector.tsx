@@ -21,18 +21,17 @@ const MonthSelector = () => {
                   borderLeft: 2,
                   borderColor: 'divider',
                   // minWidth: 150,
-                  '& .MuiTab-root': {writingMode: 'sideways-rl', textOrientation: 'sideways'}
-              }}
-              TabIndicatorProps={{
-                  sx: {
+                  '& .MuiTab-root': {writingMode: 'sideways-rl', textOrientation: 'sideways'},
+                  '& .MuiTabs-indicator': {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      height: 3, // thickness of the indicator
-                      top: 'unset', // ensure it's at the bottom
+                      height: 3,
+                      top: 'unset',
                       backgroundColor: 'primary.main'
                   }
-              }}>
+              }}
+        >
             {months.map((month, i) => (
                 <Tab key={i} label={month} onClick={() => {
                     if (selectedTab === i) setSelectedTab(false);
