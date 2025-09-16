@@ -16,8 +16,10 @@
     "@mui/material": "^7.3.2",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "i18next": "^25.5.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^15.7.3",
     "sass": "^1.92.1"
   },
   "devDependencies": {
