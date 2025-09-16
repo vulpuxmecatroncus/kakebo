@@ -10,7 +10,7 @@ import UserConfigs from "./UserConfigs.tsx";
 
 const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolean>> }) => {
 
-    const [open, setOpen] = React.useState(false);
+    const [openChangeDialogue, setOpenChangeDialogue] = React.useState(false);
 
     return (
         <Box component="header" boxShadow={1}>
@@ -24,9 +24,10 @@ const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolea
                 <Typography variant="h5" sx={{flexGrow: 1, textAlign: "center"}}>
                     {useTranslation().t('title')}
                 </Typography>
-                <UserConfigs setOpen={setOpen}/>
+                <UserConfigs openChangeLanguage={setOpenChangeDialogue}/>
             </Box>
-            <ChangeLanguage open={open} setOpen={setOpen}/>
+            <ChangeLanguage openChangeLanguageDialogue={openChangeDialogue}
+                            setOpenChangeLanguageDialogue={setOpenChangeDialogue}/>
         </Box>
     );
 };
