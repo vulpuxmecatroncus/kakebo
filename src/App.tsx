@@ -7,8 +7,7 @@ import {
     Drawer,
     Grid,
     List, ListItem,
-    ListItemButton, ListItemIcon, ListItemText, Tab,
-    Tabs,
+    ListItemButton, ListItemIcon, ListItemText,
     Typography
 } from "@mui/material";
 
@@ -19,6 +18,7 @@ import MailIcon from '@mui/icons-material/Mail';
 import "./App.scss";
 import {theme} from "./Theme.ts";
 import Header from "./components/header/Header.tsx";
+import MonthSelector from "./components/MonthSelector.tsx";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
@@ -81,17 +81,7 @@ function App() {
                         </Box>
                     </Box>
                     {/* Vertical Tabs */}
-                    <Tabs orientation="vertical" variant="scrollable" value={0}
-                          sx={{
-                              borderLeft: 1,
-                              borderColor: 'divider',
-                              // minWidth: 150,
-                              '& .MuiTab-root': {writingMode: 'sideways-rl', textOrientation: 'sideways'}
-                          }}>
-                        {[...Array(12)].map((_, i) => (
-                            <Tab key={i} label={`Tab ${i + 1}`}/>
-                        ))}
-                    </Tabs>
+                    <MonthSelector/>
                 </Box>
             </Box>
         </ThemeProvider>
