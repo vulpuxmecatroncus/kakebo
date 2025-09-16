@@ -14,16 +14,16 @@ const languages = [
 ];
 
 export const ChangeLanguage: React.FC<{
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>
-}> = ({open, setOpen}) => {
+    openChangeLanguageDialogue: boolean;
+    setOpenChangeLanguageDialogue: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({openChangeLanguageDialogue, setOpenChangeLanguageDialogue}) => {
 
     const {i18n} = useTranslation();
     //const [open, setOpen] = React.useState(false);
     const [selectedValue, setSelectedValue] = React.useState(i18n.language);
 
     const handleClose = (value?: string) => {
-        setOpen(false);
+        setOpenChangeLanguageDialogue(false);
         if (value) {
             setSelectedValue(value);
             i18n.changeLanguage(value).then((_) => {
@@ -32,7 +32,7 @@ export const ChangeLanguage: React.FC<{
     };
 
     return (
-        <Dialog onClose={() => handleClose()} open={open}>
+        <Dialog onClose={() => handleClose()} open={openChangeLanguageDialogue}>
             <DialogTitle>Select Language</DialogTitle>
             <List>
                 {languages.map((lang) => (
