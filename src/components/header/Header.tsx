@@ -1,8 +1,7 @@
-import React, {Dispatch, SetStateAction} from 'react';
+import {Dispatch, SetStateAction, useState} from 'react';
 
 import Home from "@mui/icons-material/Home";
 import {Box, IconButton, Typography} from "@mui/material";
-//SpeedDialIcon,
 import MenuIcon from "@mui/icons-material/Menu";
 import {useTranslation} from 'react-i18next';
 import {ChangeLanguage} from "./ChangeLanguage.tsx";
@@ -10,7 +9,7 @@ import UserConfigs from "./UserConfigs.tsx";
 
 const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolean>> }) => {
 
-    const [openChangeDialogue, setOpenChangeDialogue] = React.useState(false);
+    const [openChangeDialogue, setOpenChangeDialogue] = useState(false);
 
     return (
         <Box component="header" boxShadow={1}>

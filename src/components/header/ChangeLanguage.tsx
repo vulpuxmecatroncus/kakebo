@@ -1,4 +1,3 @@
-import React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import List from '@mui/material/List';
@@ -6,6 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import {useTranslation} from 'react-i18next';
+import {Dispatch, FC, SetStateAction, useState} from "react";
 
 const languages = [
     {code: 'en', label: 'English'},
@@ -13,14 +13,14 @@ const languages = [
     {code: 'es', label: 'Español'},
 ];
 
-export const ChangeLanguage: React.FC<{
+export const ChangeLanguage: FC<{
     openChangeLanguageDialogue: boolean;
-    setOpenChangeLanguageDialogue: React.Dispatch<React.SetStateAction<boolean>>
+    setOpenChangeLanguageDialogue: Dispatch<SetStateAction<boolean>>
 }> = ({openChangeLanguageDialogue, setOpenChangeLanguageDialogue}) => {
 
     const {i18n} = useTranslation();
     //const [open, setOpen] = React.useState(false);
-    const [selectedValue, setSelectedValue] = React.useState(i18n.language);
+    const [selectedValue, setSelectedValue] = useState(i18n.language);
 
     const handleClose = (value?: string) => {
         setOpenChangeLanguageDialogue(false);
