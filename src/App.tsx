@@ -3,14 +3,18 @@ import {useState} from "react";
 import {ThemeProvider} from '@mui/material/styles';
 import {
     Box,
-    Button,
+    Button, Divider,
     Drawer,
     Grid,
-    List,
-    ListItemButton, Tab,
+    List, ListItem,
+    ListItemButton, ListItemIcon, ListItemText, Tab,
     Tabs,
     Typography
 } from "@mui/material";
+
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
+
 
 import "./App.scss";
 import {theme} from "./Theme.ts";
@@ -33,9 +37,29 @@ function App() {
                     {/* Hamburger Drawer */}
                     <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
                         <List>
-                            <ListItemButton>Menu Item 1</ListItemButton>
-                            <ListItemButton>Menu Item 2</ListItemButton>
-                            <ListItemButton>Menu Item 3</ListItemButton>
+                            {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                                <ListItem key={text} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon>
+                                            {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
+                                        </ListItemIcon>
+                                        <ListItemText primary={text}/>
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                        <Divider/>
+                        <List>
+                            {['All mail', 'Trash', 'Spam'].map((text, index) => (
+                                <ListItem key={text} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon>
+                                            {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
+                                        </ListItemIcon>
+                                        <ListItemText primary={text}/>
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
                         </List>
                     </Drawer>
                     {/* Main Content */}
