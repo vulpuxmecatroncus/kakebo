@@ -1,7 +1,7 @@
 import {Dispatch, SetStateAction, useState} from 'react';
 
 import Home from "@mui/icons-material/Home";
-import {Box, IconButton, Typography} from "@mui/material";
+import {Box, IconButton, Stack, Typography} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {useTranslation} from 'react-i18next';
 import {ChangeLanguage} from "./ChangeLanguage.tsx";
@@ -12,26 +12,25 @@ const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolea
     const [openChangeDialogue, setOpenChangeDialogue] = useState(false);
 
     return (
-        <Box component="header" boxShadow={1}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" p={2} pl={4} pr={4}>
-                <Box display="flex" alignItems="center" gap={2}>
-                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)}>
-                        <MenuIcon/>
-                    </IconButton>
-                    <IconButton edge="start" color="inherit" aria-label="home">
-                        <Home/>
-                    </IconButton>
-                </Box>
+        <Stack component="header" boxShadow={1} direction={"row"} alignItems="center" justifyContent="space-between"
+               p={2}>
+            <Box display="flex" alignItems="center" gap={2}>
+                <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)}>
+                    <MenuIcon/>
+                </IconButton>
+                <IconButton edge="start" color="inherit" aria-label="home">
+                    <Home/>
+                </IconButton>
+            </Box>
+            <Box display="flex" alignItems="center" gap={2}>
                 <Typography variant="h5" sx={{textAlign: "center"}}>
                     {useTranslation().t('title')}
                 </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
-                    <UserConfigs openChangeLanguage={setOpenChangeDialogue}/>
-                </Box>
             </Box>
+            <UserConfigs openChangeLanguage={setOpenChangeDialogue}/>
             <ChangeLanguage openChangeLanguageDialogue={openChangeDialogue}
                             setOpenChangeLanguageDialogue={setOpenChangeDialogue}/>
-        </Box>
+        </Stack>
     );
 };
 
