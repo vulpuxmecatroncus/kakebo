@@ -26,6 +26,8 @@ const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolea
                 <Typography variant="h5" sx={{textAlign: "center"}}>
                     {useTranslation().t('title')}
                 </Typography>
+                {/*Added to fix UserConfig empty space*/}
+                <Box component="span" sx={{width: 56, display: "inline-block"}}/>
             </Box>
             <UserConfigs openChangeLanguage={setOpenChangeDialogue}/>
             <ChangeLanguage openChangeLanguageDialogue={openChangeDialogue}
