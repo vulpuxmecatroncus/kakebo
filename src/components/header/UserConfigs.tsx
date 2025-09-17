@@ -1,17 +1,17 @@
 import {Box, SpeedDial, SpeedDialAction} from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import PrintIcon from "@mui/icons-material/Print";
+//import PrintIcon from "@mui/icons-material/Print";
 import LanguageIcon from "@mui/icons-material/Language";
-import SaveIcon from "@mui/icons-material/Save";
+//import SaveIcon from "@mui/icons-material/Save";
 import {Dispatch, SetStateAction, useState} from "react";
 
 const UserConfigs = ({openChangeLanguage}: { openChangeLanguage: Dispatch<SetStateAction<boolean>> }) => {
     const [openSpeed, setOpenSpeed] = useState<boolean>(false);
     const actions = [
-        {icon: <AccountCircle/>, name: 'Copy'},
-        {icon: <SaveIcon/>, name: 'Save'},
-        {icon: <PrintIcon/>, name: 'Print'},
+        {icon: <AccountCircle/>, name: 'Account'},
+        // {icon: <SaveIcon/>, name: 'Save'},
+        // {icon: <PrintIcon/>, name: 'Print'},
         {icon: <LanguageIcon/>, name: 'Language'},
     ];
     return (
