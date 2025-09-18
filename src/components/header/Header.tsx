@@ -13,7 +13,7 @@ const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolea
 
     return (
         <Stack component="header" boxShadow={1} direction={"row"} alignItems="center" justifyContent="space-between"
-               p={2}>
+               p={2} bgcolor={"background.paper"}>
             <Box display="flex" alignItems="center" gap={2}>
                 <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)}>
                     <MenuIcon/>
