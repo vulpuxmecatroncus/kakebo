@@ -10,6 +10,7 @@ import Header from "./components/header/Header.tsx";
 import MonthSelector from "./components/MonthSelector.tsx";
 import HamburgerMenu from "./components/HamburgerMenu.tsx";
 import Footer from "./components/Footer.tsx";
+import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
@@ -33,7 +34,9 @@ function App() {
                                 alignItems: "center",
                                 height: "100%"
                             }}>Content</Container>
-                            <Box mt="auto" style={{textAlign: 'center'}}>Second Item</Box>
+                            <Box mt="auto" style={{textAlign: 'center'}}>
+                                <QuickPurchaseMenu/>
+                            </Box>
                             <Footer/>
                         </Stack>
                     </Grid>
