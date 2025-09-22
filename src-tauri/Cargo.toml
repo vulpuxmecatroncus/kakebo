@@ -3,7 +3,7 @@ name = "kakebo"
 version = "0.1.0"
 description = "A home administrator tool"
 authors = ["Vulpuxmecatroncus", "Yasuo I. Maidana P."]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,11 +15,11 @@ name = "kakebo_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.4.1", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
+tauri = { version = "2.8.5", features = [] }
+tauri-plugin-opener = "2.5.0"
 #serde = { version = "1.0.145", features = ["derive"] }
 #serde_json = "1.0.145"
 kakebo-data-model = { git = "ssh://git@github.com/vulpuxmecatroncus/kakebo-data-model.git", features = ["to-typescript"] }
