@@ -1935,7 +1935,6 @@ dependencies = [
 [[package]]
 name = "kakebo-data-model"
 version = "0.1.0"
-source = "git+ssh://git@github.com/vulpuxmecatroncus/kakebo-data-model.git#2bac9f153abf2f1dc1526bf4685b155df8ba5894"
 dependencies = [
  "diesel",
  "serde",
