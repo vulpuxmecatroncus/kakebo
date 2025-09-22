@@ -1930,7 +1930,6 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
- "ts-rs",
 ]
 
 [[package]]
