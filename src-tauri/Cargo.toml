@@ -23,4 +23,7 @@ tauri-plugin-opener = "2.5.0"
 #serde = { version = "1.0.145", features = ["derive"] }
 #serde_json = "1.0.145"
 #kakebo-data-model = { git = "ssh://git@github.com/vulpuxmecatroncus/kakebo-data-model.git", features = ["to-typescript"] }
-kakebo-data-model = { path = "../../kakebo-data-model", features = ["to-typescript"] }
+kakebo-data-model = { path = "../../kakebo-data-model", features = ["to-typescript", "sqlite"] }
+#libsqlite3-sys = { version = "0.35.0", features = ["bundled"] }
+#diesel = {version = "2.3.2", features = ["chrono", "sqlite"] }
+#dotenvy = "0.15"
