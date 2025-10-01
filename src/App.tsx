@@ -1,16 +1,18 @@
 import {useState} from "react";
 //import {invoke} from "@tauri-apps/api/core";
 import {ThemeProvider} from '@mui/material/styles';
-import {Box, Container, Grid, Stack} from "@mui/material";
+// import {Box, Container, Grid, Stack} from "@mui/material";
 
 
 import "./App.scss";
 import {theme} from "./Theme.ts";
 import Header from "./components/header/Header.tsx";
-import MonthSelector from "./components/MonthSelector.tsx";
+// import MonthSelector from "./components/MonthSelector.tsx";
 import HamburgerMenu from "./components/HamburgerMenu.tsx";
-import Footer from "./components/Footer.tsx";
-import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
+// import Footer from "./components/Footer.tsx";
+// import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
+import Main from "./components/main/main.tsx";
+import {Stack} from "@mui/material";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
@@ -25,25 +27,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <Stack>
                 <Header setDrawerOpen={setDrawerOpen}/>
-                <Grid container flex={1} height={{xs: "80vh", md: "90%"}}>
-                    <Grid size={{xs: 10, md: 11}}>
-                        <Stack direction="column" p={2} gap={2} height={"95%"}>
-                            <Container sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                height: "100%"
-                            }}>Content</Container>
-                            <Box mt="auto" style={{textAlign: 'center'}}>
-                                <QuickPurchaseMenu/>
-                            </Box>
-                            <Footer/>
-                        </Stack>
-                    </Grid>
-                    <Grid size={{xs: 2, md: 1}} display="flex" justifyContent="flex-end" height={"100%"}>
-                        <MonthSelector/>
-                    </Grid>
-                </Grid>
+                <Main/>
             </Stack>
 
             {/*<Box component="main">*/}
