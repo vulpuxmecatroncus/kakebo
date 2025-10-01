@@ -29,32 +29,6 @@ function App() {
                 <Header setDrawerOpen={setDrawerOpen}/>
                 <Main/>
             </Stack>
-
-            {/*<Box component="main">*/}
-            {/*     <Box display="flex">*/}
-            {/*        /!* Hamburger Drawer *!/*/}
-            {/*        /!* Main Content *!/*/}
-            {/*        <Box flex={1} display="flex" flexDirection="column" justifyContent="space-between" p={2}>*/}
-            {/*            <Box flex={1}>*/}
-            {/*                <Typography variant="body1">Main Content Area</Typography>*/}
-            {/*            </Box>*/}
-            {/*            <Box>*/}
-            {/*                <Grid container spacing={2} mb={1}>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 1</Button></Grid>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 2</Button></Grid>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 3</Button></Grid>*/}
-            {/*                </Grid>*/}
-            {/*                <Grid container spacing={2}>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 4</Button></Grid>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 5</Button></Grid>*/}
-            {/*                    <Grid size={4}><Button variant="contained" fullWidth>Button 6</Button></Grid>*/}
-            {/*                </Grid>*/}
-            {/*            </Box>*/}
-            {/*        </Box>*/}
-            {/*        /!* Vertical Tabs *!/*/}
-
-            {/*    </Box>*/}
-            {/*</Box>*/}
             <HamburgerMenu drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
         </ThemeProvider>
     );
