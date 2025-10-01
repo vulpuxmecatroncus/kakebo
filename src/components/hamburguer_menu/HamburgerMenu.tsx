@@ -11,11 +11,11 @@ import {Dispatch, FC, SetStateAction} from "react";
 const HamburgerMenu: FC<{
     drawerOpen: boolean;
     setDrawerOpen: Dispatch<SetStateAction<boolean>>;
-}> = ({ drawerOpen, setDrawerOpen }) => {
+}> = ({drawerOpen, setDrawerOpen}) => {
     return (
         <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
             <List>
-                {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                {['Items', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
                     <ListItem key={text} disablePadding>
                         <ListItemButton>
                             <ListItemIcon>

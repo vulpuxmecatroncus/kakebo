@@ -8,7 +8,7 @@ import "./App.scss";
 import {theme} from "./Theme.ts";
 import Header from "./components/header/Header.tsx";
 // import MonthSelector from "./components/MonthSelector.tsx";
-import HamburgerMenu from "./components/HamburgerMenu.tsx";
+import HamburgerMenu from "./components/hamburguer_menu/HamburgerMenu.tsx";
 // import Footer from "./components/Footer.tsx";
 // import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
 import Main from "./components/main/main.tsx";
