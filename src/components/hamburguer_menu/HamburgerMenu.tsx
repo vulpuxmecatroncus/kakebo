@@ -19,7 +19,7 @@ const HamburgerMenu: FC<{
                 {['Items', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
                     <ListItem key={text} disablePadding>
                         {text === 'Items' ? (
-                            <ListItemButton component={NavLink} to="/items">
+                            <ListItemButton component={NavLink} to="/items" onClick={() => setDrawerOpen(false)}>
                                 <ListItemIcon>
                                     <InboxIcon/>
                                 </ListItemIcon>
