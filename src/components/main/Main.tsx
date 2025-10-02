@@ -5,6 +5,7 @@ import QuickPurchaseMenu from "../QuickPurchaseMenu.tsx";
 import Footer from "../Footer.tsx";
 import MonthSelector from "../MonthSelector.tsx";
 import {Route, Routes} from "react-router";
+import Items from "./items/Items.tsx";
 
 
 const Main = () => {
@@ -20,7 +21,7 @@ const Main = () => {
                     }}>
                         <Routes>
                             <Route path="/" element={<>Main Content</>}/>
-                            <Route path="/items" element={<>Items Content</>}/>
+                            <Route path="/items" element={<Items/>}/>
                         </Routes>
                     </Container>
                     <Box mt="auto" style={{textAlign: 'center'}}>

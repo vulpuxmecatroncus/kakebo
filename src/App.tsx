@@ -11,9 +11,10 @@ import Header from "./components/header/Header.tsx";
 import HamburgerMenu from "./components/hamburguer_menu/HamburgerMenu.tsx";
 // import Footer from "./components/Footer.tsx";
 // import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
-import Main from "./components/main/main.tsx";
+
 import {Stack} from "@mui/material";
 import {BrowserRouter} from "react-router";
+import Main from "./components/main/Main.tsx";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
