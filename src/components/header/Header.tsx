@@ -6,6 +6,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {useTranslation} from 'react-i18next';
 import {ChangeLanguage} from "./ChangeLanguage.tsx";
 import UserConfigs from "./UserConfigs.tsx";
+import {NavLink} from "react-router";
 
 const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolean>> }) => {
 
@@ -18,7 +19,7 @@ const Header = ({setDrawerOpen}: { setDrawerOpen: Dispatch<SetStateAction<boolea
                 <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)}>
                     <MenuIcon/>
                 </IconButton>
-                <IconButton edge="start" color="inherit" aria-label="home">
+                <IconButton edge="start" color="inherit" aria-label="home" component={NavLink} to="/">
                     <Home/>
                 </IconButton>
             </Box>
