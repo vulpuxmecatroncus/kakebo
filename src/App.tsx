@@ -13,6 +13,7 @@ import HamburgerMenu from "./components/hamburguer_menu/HamburgerMenu.tsx";
 // import QuickPurchaseMenu from "./components/QuickPurchaseMenu.tsx";
 import Main from "./components/main/main.tsx";
 import {Stack} from "@mui/material";
+import {BrowserRouter} from "react-router";
 
 function App() {
     // const [greetMsg, setGreetMsg] = useState("");
@@ -24,13 +25,15 @@ function App() {
     // }
 
     return (
-        <ThemeProvider theme={theme}>
-            <Stack>
-                <Header setDrawerOpen={setDrawerOpen}/>
-                <Main/>
-            </Stack>
-            <HamburgerMenu drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
-        </ThemeProvider>
+        <BrowserRouter>
+            <ThemeProvider theme={theme}>
+                <Stack>
+                    <Header setDrawerOpen={setDrawerOpen}/>
+                    <Main/>
+                </Stack>
+                <HamburgerMenu drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
+            </ThemeProvider>
+        </BrowserRouter>
     );
 }
 
