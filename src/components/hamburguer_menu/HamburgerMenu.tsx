@@ -7,6 +7,7 @@ import {
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import MailIcon from "@mui/icons-material/Mail";
 import {Dispatch, FC, SetStateAction} from "react";
+import {NavLink} from "react-router";
 
 const HamburgerMenu: FC<{
     drawerOpen: boolean;
@@ -17,12 +18,21 @@ const HamburgerMenu: FC<{
             <List>
                 {['Items', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
                     <ListItem key={text} disablePadding>
-                        <ListItemButton>
-                            <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
-                            </ListItemIcon>
-                            <ListItemText primary={text}/>
-                        </ListItemButton>
+                        {text === 'Items' ? (
+                            <ListItemButton component={NavLink} to="/items">
+                                <ListItemIcon>
+                                    <InboxIcon/>
+                                </ListItemIcon>
+                                <ListItemText primary={text}/>
+                            </ListItemButton>
+                        ) : (
+                            <ListItemButton>
+                                <ListItemIcon>
+                                    {index % 2 === 0 ? <InboxIcon/> : <MailIcon/>}
+                                </ListItemIcon>
+                                <ListItemText primary={text}/>
+                            </ListItemButton>
+                        )}
                     </ListItem>
                 ))}
             </List>
