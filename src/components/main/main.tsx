@@ -4,6 +4,8 @@ import {Box, Container, Grid, Stack} from "@mui/material";
 import QuickPurchaseMenu from "../QuickPurchaseMenu.tsx";
 import Footer from "../Footer.tsx";
 import MonthSelector from "../MonthSelector.tsx";
+import {Route, Routes} from "react-router";
+
 
 const Main = () => {
     return (
@@ -15,7 +17,12 @@ const Main = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         height: "100%"
-                    }}>Content</Container>
+                    }}>
+                        <Routes>
+                            <Route path="/" element={<>Main Content</>}/>
+                            <Route path="/items" element={<>Items Content</>}/>
+                        </Routes>
+                    </Container>
                     <Box mt="auto" style={{textAlign: 'center'}}>
                         <QuickPurchaseMenu/>
                     </Box>
