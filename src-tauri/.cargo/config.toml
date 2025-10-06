@@ -2,5 +2,7 @@
 TS_RS_EXPORT_DIR = { value = "../src/dto", relative = true }
 KAKEBO_DB_NAME = { value = "sqlite://kakebo.db", relative = true }
 # DATABASE_URL = "sqlite://kakebo.db"
+RUST_LOG = { value = "info" }
+
 [net]
 git-fetch-with-cli = true
