@@ -1,5 +1,4 @@
-use kakebo_data_model::db;
-use kakebo_data_model::db::establish_db_connection;
+use kakebo_data_model::connection::{DbPoolState, create_pool, run_migrations};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -10,6 +9,8 @@ fn greet(name: &str) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    env_logger::init();
+
     tauri::Builder::default()
         .setup(|_app| {
             db::init();
