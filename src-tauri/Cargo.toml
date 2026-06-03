@@ -2,7 +2,7 @@
 name = "kakebo"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Yasuo Ignacio Maidana Perez"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,7 +15,7 @@ name = "kakebo_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
@@ -23,4 +23,10 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 kakebo-data-model = { path = "../../kakebo-data-model", features = ["sqlite", "to-typescript"] }
-
+uuid = { version = "1.23.2", features = ["serde"] }
+chrono = { version = "0.4.44", features = ["serde"] }
+tokio = { version = "1.52.3", features = ["full"] }
+keyring = "3"
+ring = { version = "0.17", features = ["std"] }
+totp-rs = { version = "5.6.0", features = ["gen_secret", "otpauth"] }
+diesel = { version = "2.3.9", features = ["r2d2"] }
