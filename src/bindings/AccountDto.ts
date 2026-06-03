@@ -3,4 +3,63 @@ import type { AccountClass } from "./AccountClass";
 import type { AccountType } from "./AccountType";
 import type { OwnershipType } from "./OwnershipType";
 
-export type AccountDto = { id: string, name: string, class: AccountClass, type_: AccountType, currency_code: string, ownership_type: OwnershipType, bank_id: string | null, parent_id: string | null, user_id: string | null, group_id: string | null, is_active: boolean, client_updated_at: string, version: number, created_at: string, };
+/**
+ * Data Transfer Object representing a ledger account.
+ */
+export type AccountDto = { 
+/**
+ * Unique identifier of the account.
+ */
+id: string, 
+/**
+ * The user-facing name of the account.
+ */
+name: string, 
+/**
+ * Broad class of the account (e.g. Asset, Liability, Equity, Revenue, Expense).
+ */
+class: AccountClass, 
+/**
+ * Detailed account sub-type (e.g. Cash, Checking, CreditCard).
+ */
+type_: AccountType, 
+/**
+ * Three-letter ISO currency code (e.g. "USD", "EUR").
+ */
+currency_code: string, 
+/**
+ * Ownership model for the account (e.g. Individual or Group).
+ */
+ownership_type: OwnershipType, 
+/**
+ * Optional identifier of the associated bank entity.
+ */
+bank_id: string | null, 
+/**
+ * Optional identifier of the parent account, for hierarchical accounts.
+ */
+parent_id: string | null, 
+/**
+ * Optional identifier of the individual user owner (if ownership_type is Individual).
+ */
+user_id: string | null, 
+/**
+ * Optional identifier of the group owner (if ownership_type is Group).
+ */
+group_id: string | null, 
+/**
+ * True if the account is active and open.
+ */
+is_active: boolean, 
+/**
+ * The timestamp when the account record was last updated on the client.
+ */
+client_updated_at: string, 
+/**
+ * Version number of the account record.
+ */
+version: number, 
+/**
+ * The timestamp when the account was created.
+ */
+created_at: string, };
