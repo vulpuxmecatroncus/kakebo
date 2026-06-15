@@ -1,0 +1,3 @@
+[submodule "src-tauri/docs"]
+	path = src-tauri/docs
+	url = git@github.com:vulpuxmecatroncus/kakebo-specs.git
