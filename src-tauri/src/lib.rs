@@ -28,45 +28,30 @@ extern crate alloc;
 
 use kakebo_data_model::connection::{Connection, DbPool};
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use std::sync::Mutex;
 use tauri::Manager;
 
 pub mod ipc;
 
 /// Shared application state injected into every Tauri command via [`tauri::State`].
-///
-/// The pool is wrapped in a `Mutex<Option<...>>` so that it starts out *locked*
-/// (no database access until the user authenticates) and is populated only after
-/// a successful [`ipc::security`] login call.
 pub struct DbState {
-    /// The r2d2 connection pool, `None` while the database is locked.
-    pub pool: Mutex<Option<DbPool>>,
+    /// The r2d2 connection pool.
+    pub pool: DbPool,
     /// Filesystem path to the SQLite database file.
     pub db_url: String,
 }
 
 impl DbState {
-    /// Create a new, **locked** `DbState` for the given database path.
-    ///
-    /// The pool is not initialised here; call one of the security login commands
-    /// to unlock it and run migrations before any data access.
-    pub fn new(db_url: String) -> Self {
+    /// Create a new `DbState` for the given database path and connection pool.
+    pub fn new(db_url: String, pool: DbPool) -> Self {
         Self {
-            pool: Mutex::new(None),
+            pool,
             db_url,
         }
     }
 
     /// Return a clone of the inner [`DbPool`].
-    ///
-    /// # Errors
-    /// Returns `Err` if the mutex is poisoned or the pool has not been
-    /// initialised yet (i.e. the user has not logged in).
     pub fn get_pool(&self) -> Result<DbPool, String> {
-        let guard = self.pool.lock().map_err(|e| e.to_string())?;
-        guard
-            .clone()
-            .ok_or_else(|| "Database is locked. Please log in first.".to_string())
+        Ok(self.pool.clone())
     }
 
     /// Obtain a single pooled connection from [`Self::get_pool`].
@@ -94,11 +79,16 @@ pub fn run() {
             let db_path = app_data_dir.join("kakebo.db");
             let db_url = db_path.to_string_lossy().into_owned();
 
-            app.manage(DbState::new(db_url));
+            keyring::use_native_store(false).map_err(|e| e.to_string())?;
+
+            // Initialize database pool and run migrations immediately on startup
+            let pool = kakebo_data_model::connection::create_pool_from_url(&db_url).map_err(|e| e.to_string())?;
+            kakebo_data_model::connection::run_migrations(&pool).map_err(|e| e.to_string())?;
+
+            app.manage(DbState::new(db_url, pool));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            ipc::greet::greet,
             ipc::session::validate_session,
             ipc::session::create_session,
             ipc::session::revoke_session,
@@ -108,13 +98,16 @@ pub fn run() {
             ipc::access_control::check_admin_access,
             ipc::access_control::grant_permission,
             ipc::access_control::revoke_permission,
-            ipc::security::has_local_password,
-            ipc::security::setup_local_password,
+            ipc::security::has_local_users,
             ipc::security::login_with_password,
+            ipc::security::create_local_user,
+            ipc::security::get_local_users,
             ipc::security::enable_biometrics,
+            ipc::security::disable_biometrics,
             ipc::security::is_biometrics_available,
             ipc::security::login_with_biometrics,
             ipc::security::is_database_locked,
+            ipc::security::lock_database,
             ipc::mfa::generate_mfa_setup,
             ipc::mfa::enable_mfa,
             ipc::mfa::verify_mfa,

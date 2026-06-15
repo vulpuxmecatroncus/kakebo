@@ -5,13 +5,11 @@
 //!
 //! | Module            | Responsibility                                      |
 //! |-------------------|-----------------------------------------------------|
-//! | [`greet`]         | Development smoke-test command                      |
 //! | [`session`]       | Create, validate, and revoke user sessions          |
 //! | [`security`]      | Local password setup, login, and biometric auth     |
 //! | [`mfa`]           | TOTP-based multi-factor authentication              |
 //! | [`access_control`]| Per-account read / write / admin permission checks  |
 
-pub mod greet;
 pub mod session;
 pub mod access_control;
 pub mod security;

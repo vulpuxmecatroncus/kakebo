@@ -32,12 +32,10 @@
 //! the key derivation domain-specific, not to provide per-user salting (that
 //! would require storing salts and is out of scope for a local-only app).
 
-use keyring::Entry;
-use std::fs;
-use std::path::PathBuf;
+use keyring_core::Entry;
 use tauri::State;
 use crate::DbState;
-use kakebo_data_model::connection::{create_pool_from_url, run_migrations};
+use kakebo_data_model::dto::UserDto;
 use ring::pbkdf2;
 use std::num::NonZeroU32;
 
@@ -67,179 +65,325 @@ fn derive_key(password: &str) -> String {
 
 /// Keyring service name used as a namespace in the OS credential store.
 const KEYRING_SERVICE: &str = "kakebo-app";
-/// Keyring account name under which the derived key is stored.
-const KEYRING_USER: &str = "local-db-key";
 
-/// Return the path to the password verification hash file (`password.hash`)
-/// stored in the same directory as the database.
-fn get_hash_path(db_url: &str) -> PathBuf {
-    let db_path = PathBuf::from(db_url);
-    let parent = db_path.parent().unwrap_or(&db_path);
-    parent.join("password.hash")
-}
-
-/// Return `true` if a local password has already been set up.
-///
-/// Checks for the presence of the `password.hash` file; no database access is
-/// required.
+/// Return `true` if any non-shadow users exist.
 #[tauri::command]
-pub async fn has_local_password(state: State<'_, DbState>) -> Result<bool, String> {
-    let hash_path = get_hash_path(&state.db_url);
-    Ok(hash_path.exists())
+pub async fn has_local_users(state: State<'_, DbState>) -> Result<bool, String> {
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+    let count = tokio::task::spawn_blocking(move || {
+        use kakebo_data_model::schemas::users::dsl as users_dsl;
+        use diesel::prelude::*;
+
+        users_dsl::users
+            .filter(users_dsl::is_shadow.eq(false))
+            .count()
+            .get_result::<i64>(&mut conn)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    Ok(count > 0)
 }
 
-/// Set up the local password for the first time.
-///
-/// Derives a key from `password`, writes a verification hash to disk, creates
-/// the connection pool, runs pending migrations, and unlocks the database state.
-///
-/// # Errors
-/// Returns `Err` if the hash file cannot be written or the pool cannot be
-/// created.
-#[tauri::command]
-pub async fn setup_local_password(
-    state: State<'_, DbState>,
-    password: String,
-) -> Result<bool, String> {
-    let derived = derive_key(&password);
-    let hash_path = get_hash_path(&state.db_url);
-    
-    // Write verification hash of derived key to file to check later.
-    let verification_hash = derive_key(&derived);
-    fs::write(hash_path, verification_hash).map_err(|e| e.to_string())?;
-
-    // Create database pool and run migrations
-    let pool = create_pool_from_url(&state.db_url).map_err(|e| e.to_string())?;
-    run_migrations(&pool).map_err(|e| e.to_string())?;
-
-    // Store pool in application state (unlocking the database)
-    let mut guard = state.pool.lock().map_err(|e| e.to_string())?;
-    *guard = Some(pool);
-
-    Ok(true)
-}
-
-/// Authenticate with the local password and unlock the database.
-///
-/// Derives the key from `password`, hashes it, and compares with the stored
-/// hash.  On success the connection pool is opened and the database is
-/// available for subsequent IPC calls.
+/// Authenticate a specific user with their local password.
 ///
 /// Returns `false` (without error) if the password is incorrect.
 #[tauri::command]
 pub async fn login_with_password(
     state: State<'_, DbState>,
+    user_id: String,
     password: String,
 ) -> Result<bool, String> {
-    let hash_path = get_hash_path(&state.db_url);
-    if !hash_path.exists() {
-        return Err("No local password has been set up".to_string());
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+    let expected_hash_opt = tokio::task::spawn_blocking(move || {
+        use kakebo_data_model::schemas::users::dsl as users_dsl;
+        use diesel::prelude::*;
+
+        users_dsl::users
+            .find(user_id)
+            .select(users_dsl::password_hash)
+            .first::<Option<String>>(&mut conn)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    if let Some(expected_hash) = expected_hash_opt {
+        let verification_hash = derive_key(&password);
+
+        Ok(verification_hash == expected_hash)
+    } else {
+        Ok(password.is_empty())
     }
-
-    let derived = derive_key(&password);
-    let expected_hash = fs::read_to_string(hash_path).map_err(|e| e.to_string())?;
-    let verification_hash = derive_key(&derived);
-
-    if verification_hash != expected_hash {
-        return Ok(false);
-    }
-
-    // Initialize connection pool
-    let pool = create_pool_from_url(&state.db_url).map_err(|e| e.to_string())?;
-    run_migrations(&pool).map_err(|e| e.to_string())?;
-
-    // Save connection pool to application state
-    let mut guard = state.pool.lock().map_err(|e| e.to_string())?;
-    *guard = Some(pool);
-
-    Ok(true)
 }
 
-/// Store the derived key in the OS secure credential store so the user can
-/// later authenticate via biometrics.
+/// Store the derived key in the OS secure credential store for a specific user.
 ///
-/// Requires a valid `password` to prove identity before storing the key.
-/// Returns `Err("Invalid password")` if verification fails.
+/// Requires a valid `password` to prove identity.
 #[tauri::command]
 pub async fn enable_biometrics(
     state: State<'_, DbState>,
+    user_id: String,
     password: String,
 ) -> Result<bool, String> {
-    let hash_path = get_hash_path(&state.db_url);
-    if !hash_path.exists() {
-        return Err("No local password has been set up".to_string());
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+    let user_id_clone = user_id.clone();
+    let expected_hash_opt = tokio::task::spawn_blocking(move || {
+        use kakebo_data_model::schemas::users::dsl as users_dsl;
+        use diesel::prelude::*;
+
+        users_dsl::users
+            .find(user_id_clone)
+            .select(users_dsl::password_hash)
+            .first::<Option<String>>(&mut conn)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    if let Some(expected_hash) = expected_hash_opt {
+        let verification_hash = derive_key(&password);
+
+        if verification_hash != expected_hash {
+            return Err("Invalid password".to_string());
+        }
+
+        let keyring_user = format!("user-key-{}", user_id);
+        let entry = Entry::new(KEYRING_SERVICE, &keyring_user).map_err(|e| e.to_string())?;
+        entry.set_password(&verification_hash).map_err(|e| e.to_string())?;
+
+        Ok(true)
+    } else {
+        Err("User does not have a local password".to_string())
     }
-
-    let derived = derive_key(&password);
-    let expected_hash = fs::read_to_string(hash_path).map_err(|e| e.to_string())?;
-    let verification_hash = derive_key(&derived);
-
-    if verification_hash != expected_hash {
-        return Err("Invalid password".to_string());
-    }
-
-    // Store key securely in system keychain/credential vault.
-    let entry = Entry::new(KEYRING_SERVICE, KEYRING_USER).map_err(|e| e.to_string())?;
-    entry.set_password(&derived).map_err(|e| e.to_string())?;
-
-    Ok(true)
 }
 
-/// Return `true` if a key is present in the OS secure store (i.e. biometrics
-/// has been set up).
-///
-/// This performs a lightweight probe on the keyring entry; no database access
-/// is needed.
+/// Disable biometrics for a specific user.
 #[tauri::command]
-pub async fn is_biometrics_available() -> Result<bool, String> {
-    let entry = Entry::new(KEYRING_SERVICE, KEYRING_USER).map_err(|e| e.to_string())?;
-    // Verification query to ensure OS keychain is readable/writable
-    Ok(entry.get_password().is_ok() || entry.set_password("test-probe").is_ok())
+pub async fn disable_biometrics(user_id: String) -> Result<bool, String> {
+    let keyring_user = format!("user-key-{}", user_id);
+    let entry = Entry::new(KEYRING_SERVICE, &keyring_user).map_err(|e| e.to_string())?;
+    match entry.delete_credential() {
+        Ok(_) => Ok(true),
+        Err(e) => {
+            let err_str = e.to_string().to_lowercase();
+            if err_str.contains("no entry") 
+                || err_str.contains("no credential") 
+                || err_str.contains("not found") 
+                || err_str.contains("no matching") 
+            {
+                Ok(true)
+            } else {
+                Err(format!("Failed to delete biometric credential: {}", e))
+            }
+        }
+    }
 }
 
-/// Authenticate using the OS biometric prompt and unlock the database.
-///
-/// Retrieves the previously stored derived key from the OS secure credential
-/// store.  On macOS this triggers a Touch ID / Face ID prompt; on Windows it
-/// triggers Windows Hello.  The key hash is verified before unlocking.
-///
-/// Returns `false` (without error) if verification fails.
+/// Return `true` if biometrics is available, and if user_id is provided,
+/// checks if a key is present in the OS secure store for this user.
 #[tauri::command]
-pub async fn login_with_biometrics(state: State<'_, DbState>) -> Result<bool, String> {
-    let hash_path = get_hash_path(&state.db_url);
-    if !hash_path.exists() {
-        return Err("No local password has been set up".to_string());
+pub async fn is_biometrics_available(user_id: Option<String>) -> Result<bool, String> {
+    if let Some(uid) = user_id {
+        let keyring_user = format!("user-key-{}", uid);
+        let entry = Entry::new(KEYRING_SERVICE, &keyring_user).map_err(|e| e.to_string())?;
+        match entry.get_password() {
+            Ok(_) => Ok(true),
+            Err(e) => {
+                let err_str = e.to_string().to_lowercase();
+                if err_str.contains("no entry") 
+                    || err_str.contains("no credential") 
+                    || err_str.contains("not found") 
+                    || err_str.contains("no matching") 
+                {
+                    Ok(false)
+                } else {
+                    Ok(true)
+                }
+            }
+        }
+    } else {
+        #[cfg(target_os = "macos")]
+        {
+            use objc2_local_authentication::{LAContext, LAPolicy};
+            let context = unsafe { LAContext::new() };
+            let can_evaluate = unsafe {
+                context.canEvaluatePolicy_error(LAPolicy::DeviceOwnerAuthenticationWithBiometrics).is_ok()
+            };
+            Ok(can_evaluate)
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            Ok(true)
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+async fn verify_user_presence_biometrically() -> Result<(), String> {
+    let (tx, rx) = tokio::sync::oneshot::channel::<Result<(), String>>();
+
+    {
+        use objc2_local_authentication::{LAContext, LAPolicy};
+        use objc2_foundation::NSString;
+        use block2::RcBlock;
+
+        let context = unsafe { LAContext::new() };
+        let reason = NSString::from_str("Authenticate to unlock your profile");
+
+        unsafe {
+            if let Err(err) = context.canEvaluatePolicy_error(LAPolicy::DeviceOwnerAuthenticationWithBiometrics) {
+                return Err(err.localizedDescription().to_string());
+            }
+        }
+
+        let tx_holder = std::sync::Arc::new(std::sync::Mutex::new(Some(tx)));
+
+        let reply_block = RcBlock::new(move |success: objc2::runtime::Bool, error: *mut objc2_foundation::NSError| {
+            let tx_opt = tx_holder.lock().unwrap().take();
+            if let Some(tx) = tx_opt {
+                if success.as_bool() {
+                    let _ = tx.send(Ok(()));
+                } else {
+                    let err_msg = if !error.is_null() {
+                        unsafe { (*error).localizedDescription().to_string() }
+                    } else {
+                        "Biometric authentication failed".to_string()
+                    };
+                    let _ = tx.send(Err(err_msg));
+                }
+            }
+        });
+
+        unsafe {
+            context.evaluatePolicy_localizedReason_reply(
+                LAPolicy::DeviceOwnerAuthenticationWithBiometrics,
+                &reason,
+                &reply_block,
+            );
+        }
     }
 
-    // Attempt to retrieve key from OS Secure Credential vault.
-    // Natively on macOS, Windows, and mobile, this prompts the OS system biometric check (e.g. Touch ID/Windows Hello)
-    let entry = Entry::new(KEYRING_SERVICE, KEYRING_USER).map_err(|e| e.to_string())?;
+    rx.await.map_err(|e| e.to_string())?
+}
+
+#[cfg(not(target_os = "macos"))]
+async fn verify_user_presence_biometrically() -> Result<(), String> {
+    Ok(())
+}
+
+/// Authenticate using the OS biometric prompt for a specific user.
+#[tauri::command]
+pub async fn login_with_biometrics(
+    state: State<'_, DbState>,
+    user_id: String,
+) -> Result<bool, String> {
+    // Verify user presence biometrically (prompts Touch ID on macOS)
+    verify_user_presence_biometrically().await?;
+
+    let keyring_user = format!("user-key-{}", user_id);
+    let entry = Entry::new(KEYRING_SERVICE, &keyring_user).map_err(|e| e.to_string())?;
     let derived = entry.get_password().map_err(|e| format!("Secure storage/Biometric access failed: {}", e))?;
 
-    let expected_hash = fs::read_to_string(hash_path).map_err(|e| e.to_string())?;
-    let verification_hash = derive_key(&derived);
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
 
-    if verification_hash != expected_hash {
-        return Ok(false);
+    let user_id_clone = user_id.clone();
+    let expected_hash_opt = tokio::task::spawn_blocking(move || {
+        use kakebo_data_model::schemas::users::dsl as users_dsl;
+        use diesel::prelude::*;
+
+        users_dsl::users
+            .find(user_id_clone)
+            .select(users_dsl::password_hash)
+            .first::<Option<String>>(&mut conn)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    if let Some(expected_hash) = expected_hash_opt {
+        Ok(derived == expected_hash)
+    } else {
+        Ok(false)
     }
+}
 
-    // Initialize connection pool
-    let pool = create_pool_from_url(&state.db_url).map_err(|e| e.to_string())?;
-    run_migrations(&pool).map_err(|e| e.to_string())?;
+/// Return `true` if the database is currently locked.
+///
+/// Kept for backward compatibility, now always returns `false`.
+#[tauri::command]
+pub async fn is_database_locked(_state: State<'_, DbState>) -> Result<bool, String> {
+    Ok(false)
+}
 
-    // Store in application state
-    let mut guard = state.pool.lock().map_err(|e| e.to_string())?;
-    *guard = Some(pool);
-
+/// Lock the database.
+///
+/// Kept for backward compatibility, now does nothing and returns `true`.
+#[tauri::command]
+pub async fn lock_database(_state: State<'_, DbState>) -> Result<bool, String> {
     Ok(true)
 }
 
-/// Return `true` if the database is currently locked (no active pool).
+/// Create a new local user in the database.
 ///
-/// The frontend can use this on startup to decide whether to show the login
-/// screen.
+/// ## Parameters
+/// - `state`: State<'_, DbState> containing the database connection pool.
+/// - `username`: The unique username for the user.
+/// - `email`: Optional email address for the user.
+/// - `password`: The plaintext password to derive the local key from. Must not be empty.
+///
+/// ## Errors
+/// Returns an error if:
+/// - The connection pool is unavailable.
+/// - The password is empty or only whitespace.
+/// - The database operation fails.
 #[tauri::command]
-pub async fn is_database_locked(state: State<'_, DbState>) -> Result<bool, String> {
-    let guard = state.pool.lock().map_err(|e| e.to_string())?;
-    Ok(guard.is_none())
+pub async fn create_local_user(
+    state: State<'_, DbState>,
+    username: String,
+    email: Option<String>,
+    password: String,
+) -> Result<UserDto, String> {
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+    if password.trim().is_empty() {
+        return Err("Password cannot be empty".to_string());
+    }
+
+    let password_hash = derive_key(&password);
+
+    tokio::task::spawn_blocking(move || {
+        kakebo_data_model::repositories::identity::UserRepository::create(
+            &mut conn,
+            &username,
+            email.as_deref(),
+            &password_hash,
+        )
+        .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Retrieve all local users from the database.
+#[tauri::command]
+pub async fn get_local_users(state: State<'_, DbState>) -> Result<Vec<UserDto>, String> {
+    let pool = state.get_pool()?;
+    let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+    tokio::task::spawn_blocking(move || {
+        kakebo_data_model::repositories::identity::UserRepository::all(&mut conn)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
