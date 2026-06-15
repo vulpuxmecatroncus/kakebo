@@ -22,8 +22,7 @@
 //!    access with other users.
 
 use crate::DbState;
-use kakebo_data_model::dto::AccountPermissionDto;
-use kakebo_data_model::models::PermissionLevel;
+use kakebo_data_model::dto::{AccountPermissionDto, GrantPermissionDto, RevokePermissionDto};
 use kakebo_data_model::repositories::identity::AccountRepository;
 use tauri::State;
 
@@ -85,23 +84,14 @@ pub async fn check_admin_access(
 #[tauri::command]
 pub async fn grant_permission(
     state: State<'_, DbState>,
-    admin_user_id: String,
-    target_user_id: String,
-    account_id: String,
-    level: PermissionLevel,
+    dto: GrantPermissionDto,
 ) -> Result<AccountPermissionDto, String> {
     let pool = state.get_pool()?;
     let mut conn = pool.get().map_err(|e| e.to_string())?;
     tokio::task::spawn_blocking(move || {
-        AccountRepository::grant_permission(
-            &mut conn,
-            &admin_user_id,
-            &target_user_id,
-            &account_id,
-            level,
-        )
-        .map(AccountPermissionDto::from)
-        .map_err(|e| e.to_string())
+        AccountRepository::grant_permission(&mut conn, &dto)
+            .map(AccountPermissionDto::from)
+            .map_err(|e| e.to_string())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -114,20 +104,13 @@ pub async fn grant_permission(
 #[tauri::command]
 pub async fn revoke_permission(
     state: State<'_, DbState>,
-    admin_user_id: String,
-    target_user_id: String,
-    account_id: String,
+    dto: RevokePermissionDto,
 ) -> Result<usize, String> {
     let pool = state.get_pool()?;
     let mut conn = pool.get().map_err(|e| e.to_string())?;
     tokio::task::spawn_blocking(move || {
-        AccountRepository::revoke_permission(
-            &mut conn,
-            &admin_user_id,
-            &target_user_id,
-            &account_id,
-        )
-        .map_err(|e| e.to_string())
+        AccountRepository::revoke_permission(&mut conn, &dto)
+            .map_err(|e| e.to_string())
     })
     .await
     .map_err(|e| e.to_string())?

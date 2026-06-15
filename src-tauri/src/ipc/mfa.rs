@@ -23,35 +23,10 @@
 //! `kakebo_data_model::repositories::identity::UserRepository`.
 
 use kakebo_data_model::repositories::identity::UserRepository;
+use kakebo_data_model::dto::EnableMfaDto;
 use tauri::State;
 use crate::DbState;
-use totp_rs::{Algorithm, TOTP, Secret};
-
-/// Build a [`TOTP`] verifier from a Base32-encoded secret string.
-///
-/// Uses the standard RFC 6238 defaults (SHA-1, 6 digits, 30-second step)
-/// without an issuer or account label — suitable for pure code verification.
-fn build_totp(encoded_secret: &str) -> Result<TOTP, String> {
-    let secret = Secret::Encoded(encoded_secret.to_string());
-    TOTP::new(
-        Algorithm::SHA1,
-        6,
-        1,
-        30,
-        secret.to_bytes().map_err(|e| e.to_string())?,
-        None,
-        String::new(),
-    )
-    .map_err(|e| e.to_string())
-}
-
-/// Verify a TOTP `code` against a Base32-encoded `encoded_secret`.
-///
-/// Returns `true` if the code is valid for the current 30-second window.
-fn verify_code(encoded_secret: &str, code: &str) -> Result<bool, String> {
-    let totp = build_totp(encoded_secret)?;
-    Ok(totp.check_current(code).unwrap_or(false))
-}
+use kakebo_data_model::security::{generate_mfa_setup as gen_mfa_setup, verify_totp_code};
 
 /// Run a blocking database closure on a dedicated thread pool managed by Tokio.
 ///
@@ -79,21 +54,7 @@ where
 /// [`enable_mfa`].
 #[tauri::command]
 pub fn generate_mfa_setup(username: String) -> Result<(String, String), String> {
-    let secret = Secret::generate_secret();
-    let secret_str = secret.to_encoded().to_string(); // Base32 encoded secret representation
-
-    let totp = TOTP::new(
-        Algorithm::SHA1,
-        6,
-        1,
-        30,
-        secret.to_bytes().map_err(|e| e.to_string())?,
-        Some("Kakebo".to_string()),
-        username,
-    )
-    .map_err(|e| e.to_string())?;
-
-    Ok((secret_str, totp.get_url()))
+    gen_mfa_setup(username)
 }
 
 /// Confirm a TOTP code and persist the MFA secret for `user_id`.
@@ -105,17 +66,16 @@ pub fn generate_mfa_setup(username: String) -> Result<(String, String), String> 
 #[tauri::command]
 pub async fn enable_mfa(
     state: State<'_, DbState>,
-    user_id: String,
-    secret: String,
+    dto: EnableMfaDto,
     code: String,
 ) -> Result<bool, String> {
-    if !verify_code(&secret, &code)? {
+    if !verify_totp_code(&dto.secret, &code)? {
         return Ok(false);
     }
 
     let mut conn = state.get_conn()?;
     spawn_db(move || {
-        UserRepository::enable_mfa(&mut conn, &user_id, &secret)
+        UserRepository::enable_mfa(&mut conn, &dto)
             .map_err(|e| e.to_string())
     })
     .await?;
@@ -148,7 +108,7 @@ pub async fn verify_mfa(
     }
 
     let secret = secret_opt.ok_or("MFA is enabled but no secret is stored")?;
-    verify_code(&secret, &code)
+    verify_totp_code(&secret, &code)
 }
 
 /// Disable MFA for `user_id` and remove the stored secret from the database.

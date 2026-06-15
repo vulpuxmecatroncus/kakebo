@@ -24,6 +24,8 @@
 //! kakebo-data-model (Diesel + SQLite)
 //! ```
 
+extern crate alloc;
+
 use kakebo_data_model::connection::{Connection, DbPool};
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use std::sync::Mutex;

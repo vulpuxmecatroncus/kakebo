@@ -26,7 +26,6 @@ kakebo-data-model = { path = "../../kakebo-data-model", features = ["sqlite", "t
 uuid = { version = "1.23.2", features = ["serde"] }
 chrono = { version = "0.4.44", features = ["serde"] }
 tokio = { version = "1.52.3", features = ["full"] }
-keyring = "3"
-ring = { version = "0.17", features = ["std"] }
-totp-rs = { version = "5.6.0", features = ["gen_secret", "otpauth"] }
-diesel = { version = "2.3.9", features = ["r2d2"] }
+keyring = "4.0.1"
+ring = { version = "0.17.14", features = ["std"] }
+diesel = { version = "2.3.10", features = ["r2d2"] }

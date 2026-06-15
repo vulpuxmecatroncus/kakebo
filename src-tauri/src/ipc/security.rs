@@ -33,27 +33,23 @@
 //! would require storing salts and is out of scope for a local-only app).
 
 use keyring::Entry;
-use ring::pbkdf2;
-use std::num::NonZeroU32;
 use std::fs;
 use std::path::PathBuf;
 use tauri::State;
 use crate::DbState;
 use kakebo_data_model::connection::{create_pool_from_url, run_migrations};
+use ring::pbkdf2;
+use std::num::NonZeroU32;
 
 /// Fixed domain salt for PBKDF2 key derivation.
-const SALT: &[u8] = b"kakebo-local-salt-constant";
-/// Keyring service name used as a namespace in the OS credential store.
-const KEYRING_SERVICE: &str = "kakebo-app";
-/// Keyring account name under which the derived key is stored.
-const KEYRING_USER: &str = "local-db-key";
+const PBKDF2_SALT: &[u8] = b"kakebo-local-salt-constant";
 
 /// Encode a byte slice as a lowercase hex string.
 fn to_hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
-/// Derive a 32-byte key from `password` using PBKDF2-HMAC-SHA256 and return
+/// Derive a 32-byte key from a password using PBKDF2-HMAC-SHA256 and return
 /// it as a lowercase hex string (64 characters).
 fn derive_key(password: &str) -> String {
     let mut pbkdf2_key = [0u8; 32];
@@ -61,12 +57,18 @@ fn derive_key(password: &str) -> String {
     pbkdf2::derive(
         pbkdf2::PBKDF2_HMAC_SHA256,
         n_iter,
-        SALT,
+        PBKDF2_SALT,
         password.as_bytes(),
         &mut pbkdf2_key,
     );
     to_hex(&pbkdf2_key)
 }
+
+
+/// Keyring service name used as a namespace in the OS credential store.
+const KEYRING_SERVICE: &str = "kakebo-app";
+/// Keyring account name under which the derived key is stored.
+const KEYRING_USER: &str = "local-db-key";
 
 /// Return the path to the password verification hash file (`password.hash`)
 /// stored in the same directory as the database.
