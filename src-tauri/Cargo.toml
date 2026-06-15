@@ -23,9 +23,17 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 kakebo-data-model = { path = "../../kakebo-data-model", features = ["sqlite", "to-typescript"] }
-uuid = { version = "1.23.2", features = ["serde"] }
-chrono = { version = "0.4.44", features = ["serde"] }
+uuid = { version = "1.23.3", features = ["serde", "v4"] }
+chrono = { version = "0.4.45", features = ["serde"] }
 tokio = { version = "1.52.3", features = ["full"] }
 keyring = "4.0.1"
+keyring-core = "1.0.0"
 ring = { version = "0.17.14", features = ["std"] }
 diesel = { version = "2.3.10", features = ["r2d2"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6.4"
+objc2-foundation = "0.3.2"
+objc2-local-authentication = "0.3.2"
+block2 = "0.6.2"
+
