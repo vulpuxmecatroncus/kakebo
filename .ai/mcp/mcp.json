@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "dendrite-synapse-kakebo": {
+      "command": "/Users/yasuomaidana/go/bin/dendrite",
+      "args": [
+        "inter",
+        "serve",
+        "--synapse",
+        "kakebo"
+      ]
+    }
+  }
+}
